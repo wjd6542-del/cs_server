@@ -11,6 +11,7 @@ function ensureAuth(user) {
 /** CS 응대 (/api/support) — 업체 응대 / 게임사 응대 */
 export default async function supportRoutes(app) {
   app.post("/list", async (req) => service.list(validate(listSchema, req.body || {})));
+  app.post("/alerts", async (req) => service.alerts(req.body || {}));
   app.post("/get", async (req) => { const { id } = validate(idSchema, req.body); return service.get(id); });
   app.post("/save", async (req) => { ensureAuth(req.user); return service.save(validate(saveSchema, req.body), req.user); });
   app.post("/status", async (req) => { ensureAuth(req.user); return service.setStatus(validate(statusSchema, req.body)); });

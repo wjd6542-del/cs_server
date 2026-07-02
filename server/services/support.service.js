@@ -44,6 +44,24 @@ export default {
     return buildPageResult({ rows: rows.map(shape), total, page, limit });
   },
 
+  /** 미해결(접수/처리중) 응대 알림 — 양측 합산 + 파티별 카운트 */
+  async alerts({ limit = 20 } = {}) {
+    const where = { status: { in: ["OPEN", "IN_PROGRESS"] } };
+    const [rows, total, byParty] = await Promise.all([
+      prisma.supportTicket.findMany({
+        where,
+        include: INCLUDE,
+        orderBy: [{ priority: "desc" }, { updated_at: "desc" }],
+        take: limit,
+      }),
+      prisma.supportTicket.count({ where }),
+      prisma.supportTicket.groupBy({ by: ["party"], where, _count: { _all: true } }),
+    ]);
+    const counts = { VENDOR: 0, GAME_COMPANY: 0 };
+    for (const g of byParty) counts[g.party] = g._count._all;
+    return { rows: rows.map(shape), total, counts };
+  },
+
   async get(id) {
     const t = await prisma.supportTicket.findUnique({
       where: { id },
