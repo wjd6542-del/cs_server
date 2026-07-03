@@ -10,6 +10,8 @@ export const listSchema = z.object({
   solution_company_id: z.coerce.number().int().positive().optional(),
   tag_ids: z.array(z.coerce.number().int().positive()).optional(),
   q: z.string().trim().optional(),
+  date_from: z.string().trim().optional(),
+  date_to: z.string().trim().optional(),
   page: z.coerce.number().int().optional(),
   limit: z.coerce.number().int().optional(),
 });

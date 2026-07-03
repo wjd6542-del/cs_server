@@ -43,6 +43,11 @@ export default {
     if (params.solution_company_id) where.solution_company_id = params.solution_company_id;
     if (params.tag_ids?.length) where.tags = { some: { id: { in: params.tag_ids } } };
     if (params.q) where.title = { contains: params.q };
+    if (params.date_from || params.date_to) {
+      where.created_at = {};
+      if (params.date_from) where.created_at.gte = new Date(`${params.date_from}T00:00:00`);
+      if (params.date_to) where.created_at.lte = new Date(`${params.date_to}T23:59:59.999`);
+    }
     const { page, limit, skip } = parsePage(params);
     const [rows, total] = await Promise.all([
       prisma.supportTicket.findMany({ where, include: INCLUDE, orderBy: [{ status: "asc" }, { priority: "desc" }, { id: "desc" }], skip, take: limit }),
