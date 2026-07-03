@@ -88,5 +88,10 @@ if (fs.existsSync(routesPath)) {
   }
 }
 
+import { startExchangeRateCron } from "./cron/exchangeRate.cron.js";
+
 await app.ready();
 app.listen({ port: Number(process.env.PORT) || 3003, host: "0.0.0.0" });
+
+// 환율 일일 자동 수집 크론
+startExchangeRateCron();

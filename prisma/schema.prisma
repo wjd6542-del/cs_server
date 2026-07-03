@@ -539,3 +539,28 @@ model PostAttachment {
 
   @@index([post_id])
 }
+
+//////////////////////////////////////////////////////////////
+// 환율 (매일 자동 수집)
+//////////////////////////////////////////////////////////////
+
+/// 일별 환율 스냅샷 (1 외화 = X원 기준)
+model ExchangeRate {
+  id     Int      @id @default(autoincrement())
+  base   String   @default("KRW") // 기준 통화
+  date   DateTime // 수집 일자(자정 기준)
+
+  krw Decimal  @default(1) @db.Decimal(18, 4) // 원 (기준=1)
+  usd Decimal? @db.Decimal(18, 4) // 달러
+  jpy Decimal? @db.Decimal(18, 4) // 엔
+  cny Decimal? @db.Decimal(18, 4) // 위안
+  vnd Decimal? @db.Decimal(18, 6) // 베트남 동
+  eur Decimal? @db.Decimal(18, 4) // 유로
+  gbp Decimal? @db.Decimal(18, 4) // 파운드
+
+  source     String? // 데이터 출처
+  created_at DateTime @default(now())
+
+  @@unique([date])
+  @@index([date])
+}
