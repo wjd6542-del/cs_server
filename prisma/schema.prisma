@@ -607,3 +607,14 @@ model ExchangeRate {
   @@unique([date])
   @@index([date])
 }
+
+/// 다국어 번역팩 — name = { ko, en, ja, zh }. 한국어 텍스트를 키로 사용
+model LangPack {
+  id         Int      @id @default(autoincrement())
+  name       Json // { ko, en, ja, zh }
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([is_active])
+}
