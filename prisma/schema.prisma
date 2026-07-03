@@ -232,10 +232,11 @@ enum SettlementStatus {
   DONE // 완료
 }
 
-/// 응대 대상: VENDOR=업체, GAME_COMPANY=게임사
+/// 응대 대상: VENDOR=업체, GAME_COMPANY=게임사, SOLUTION=솔루션사
 enum SupportParty {
   VENDOR
   GAME_COMPANY
+  SOLUTION
 }
 
 /// 응대 상태
@@ -296,6 +297,31 @@ model Vendor {
   ledgerEntries LedgerEntry[]
   settlements   Settlement[]
   tickets       SupportTicket[]
+
+  @@index([sort])
+  @@index([parent_id])
+}
+
+/// 솔루션사 (솔루션 응대 대상) — 상하위 계층
+model SolutionCompany {
+  id            Int     @id @default(autoincrement())
+  name          String // 솔루션사명
+  code          String? @unique // 식별 코드
+  contact_name  String? // 담당자
+  contact_phone String?
+  contact_email String?
+  memo          String? @db.Text
+  is_active     Boolean @default(true)
+  sort          Int     @default(0)
+
+  parent_id Int? // 상위 솔루션사 — null 이면 최상위
+  parent    SolutionCompany?  @relation("SolutionCompanyTree", fields: [parent_id], references: [id])
+  children  SolutionCompany[] @relation("SolutionCompanyTree")
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  tickets SupportTicket[]
 
   @@index([sort])
   @@index([parent_id])
@@ -366,6 +392,8 @@ model SupportTicket {
   vendor          Vendor?      @relation(fields: [vendor_id], references: [id])
   game_company_id Int?
   game_company    GameCompany? @relation(fields: [game_company_id], references: [id])
+  solution_company_id Int?
+  solution_company    SolutionCompany? @relation(fields: [solution_company_id], references: [id])
 
   title    String
   category String?
@@ -385,6 +413,7 @@ model SupportTicket {
   @@index([status])
   @@index([vendor_id])
   @@index([game_company_id])
+  @@index([solution_company_id])
 }
 
 /// 응대 메시지 (티켓 내 대화 스레드)

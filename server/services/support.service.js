@@ -5,6 +5,7 @@ import { parsePage, buildPageResult } from "../utils/pagination.js";
 const INCLUDE = {
   game_company: { select: { id: true, name: true } },
   vendor: { select: { id: true, name: true } },
+  solution_company: { select: { id: true, name: true } },
   tags: { select: { id: true, name: true, color: true } },
   _count: { select: { messages: true } },
 };
@@ -17,6 +18,8 @@ function shape(t) {
     vendor_name: t.vendor?.name || null,
     game_company_id: t.game_company_id,
     game_company_name: t.game_company?.name || null,
+    solution_company_id: t.solution_company_id,
+    solution_company_name: t.solution_company?.name || null,
     title: t.title,
     category: t.category,
     status: t.status,
@@ -37,6 +40,7 @@ export default {
     if (params.status) where.status = params.status;
     if (params.vendor_id) where.vendor_id = params.vendor_id;
     if (params.game_company_id) where.game_company_id = params.game_company_id;
+    if (params.solution_company_id) where.solution_company_id = params.solution_company_id;
     if (params.tag_ids?.length) where.tags = { some: { id: { in: params.tag_ids } } };
     if (params.q) where.title = { contains: params.q };
     const { page, limit, skip } = parsePage(params);
@@ -60,7 +64,7 @@ export default {
       prisma.supportTicket.count({ where }),
       prisma.supportTicket.groupBy({ by: ["party"], where, _count: { _all: true } }),
     ]);
-    const counts = { VENDOR: 0, GAME_COMPANY: 0 };
+    const counts = { VENDOR: 0, GAME_COMPANY: 0, SOLUTION: 0 };
     for (const g of byParty) counts[g.party] = g._count._all;
     return { rows: rows.map(shape), total, counts };
   },
@@ -82,6 +86,7 @@ export default {
       party: data.party,
       vendor_id: data.party === "VENDOR" ? data.vendor_id : null,
       game_company_id: data.party === "GAME_COMPANY" ? data.game_company_id : null,
+      solution_company_id: data.party === "SOLUTION" ? data.solution_company_id : null,
       title: data.title,
       category: data.category ?? null,
       status: data.status,
