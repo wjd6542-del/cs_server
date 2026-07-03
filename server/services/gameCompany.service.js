@@ -59,13 +59,18 @@ export default {
       select: { id: true, name: true, code: true, parent_id: true, is_active: true },
     });
     const byId = new Map();
-    rows.forEach((r) => byId.set(r.id, { ...r, children: [], open_count: 0 }));
+    rows.forEach((r) => byId.set(r.id, { ...r, children: [], open_count: 0, progress_count: 0 }));
     const counts = await prisma.supportTicket.groupBy({
-      by: ["game_company_id"],
+      by: ["game_company_id", "status"],
       where: { status: { in: ["OPEN", "IN_PROGRESS"] }, game_company_id: { not: null } },
       _count: { _all: true },
     });
-    for (const c of counts) { const n = byId.get(c.game_company_id); if (n) n.open_count = c._count._all; }
+    for (const c of counts) {
+      const n = byId.get(c.game_company_id);
+      if (!n) continue;
+      if (c.status === "OPEN") n.open_count = c._count._all;
+      else if (c.status === "IN_PROGRESS") n.progress_count = c._count._all;
+    }
     const roots = [];
     for (const node of byId.values()) {
       if (node.parent_id && byId.has(node.parent_id)) byId.get(node.parent_id).children.push(node);

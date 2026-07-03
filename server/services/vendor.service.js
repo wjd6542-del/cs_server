@@ -56,14 +56,19 @@ export default {
       select: { id: true, name: true, code: true, parent_id: true, is_active: true },
     });
     const byId = new Map();
-    rows.forEach((r) => byId.set(r.id, { ...r, children: [], open_count: 0 }));
-    // 미해결(접수/처리중) 응대 카운트
+    rows.forEach((r) => byId.set(r.id, { ...r, children: [], open_count: 0, progress_count: 0 }));
+    // 상태별 응대 카운트 (접수/처리중 분리)
     const counts = await prisma.supportTicket.groupBy({
-      by: ["vendor_id"],
+      by: ["vendor_id", "status"],
       where: { status: { in: ["OPEN", "IN_PROGRESS"] }, vendor_id: { not: null } },
       _count: { _all: true },
     });
-    for (const c of counts) { const n = byId.get(c.vendor_id); if (n) n.open_count = c._count._all; }
+    for (const c of counts) {
+      const n = byId.get(c.vendor_id);
+      if (!n) continue;
+      if (c.status === "OPEN") n.open_count = c._count._all;
+      else if (c.status === "IN_PROGRESS") n.progress_count = c._count._all;
+    }
     const roots = [];
     for (const node of byId.values()) {
       if (node.parent_id && byId.has(node.parent_id)) byId.get(node.parent_id).children.push(node);
