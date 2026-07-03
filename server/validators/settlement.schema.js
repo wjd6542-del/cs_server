@@ -7,6 +7,8 @@ export const listSchema = z.object({
   status: z.enum(["PENDING", "PARTIAL", "DONE"]).optional(),
   vendor_id: z.coerce.number().int().positive().optional(),
   game_company_id: z.coerce.number().int().positive().optional(),
+  date_from: z.string().trim().optional(),
+  date_to: z.string().trim().optional(),
   page: z.coerce.number().int().optional(),
   limit: z.coerce.number().int().optional(),
 });

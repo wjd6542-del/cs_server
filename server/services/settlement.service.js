@@ -42,6 +42,12 @@ export default {
     if (params.status) where.status = params.status;
     if (params.vendor_id) where.vendor_id = params.vendor_id;
     if (params.game_company_id) where.game_company_id = params.game_company_id;
+    // 정산 기간이 선택 범위와 겹치는 건 (period_start ≤ to AND period_end ≥ from)
+    if (params.date_from || params.date_to) {
+      where.AND = where.AND || [];
+      if (params.date_to) where.AND.push({ period_start: { lte: new Date(`${params.date_to}T23:59:59.999`) } });
+      if (params.date_from) where.AND.push({ period_end: { gte: new Date(`${params.date_from}T00:00:00`) } });
+    }
     const { page, limit, skip } = parsePage(params);
     const [rows, total] = await Promise.all([
       prisma.settlement.findMany({ where, include: INCLUDE, orderBy: [{ period_end: "desc" }, { id: "desc" }], skip, take: limit }),
