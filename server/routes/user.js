@@ -45,7 +45,7 @@ export default async function userRoutes(app) {
   /** 사용자 IP 화이트리스트 조회 @route POST /api/user/ip/list */
   app.post(
     "/ip/list",
-    { preHandler: permission("usermanager.ip.view") },
+    { preHandler: permission("usermanager.view") },
     async (req) => {
       return userService.getUserIpList(req.body);
     },
